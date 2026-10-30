@@ -1,5 +1,165 @@
 {% extends "base.html" %}
+{% block title %}Dashboard - SistemaStock{% endblock %}
 {% block content %}
-<h1 class="h3">Bienvenido, {{ current_user.nombre }}</h1>
-<p class="text-muted">Aquí irá el dashboard de inventario.</p>
+<h1 class="h3 mb-4">Dashboard</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Productos</div>
+                <div class="fs-2 fw-semibold">{{ total_productos }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Unidades en stock</div>
+                <div class="fs-2 fw-semibold">{{ unidades }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Valor del inventario</div>
+                <div class="fs-2 fw-semibold">{{ valor }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100 {% if bajo_stock %}border-danger{% endif %}">
+            <div class="card-body">
+                <div class="text-muted small">Bajo stock</div>
+                <div class="fs-2 fw-semibold {% if bajo_stock %}text-danger{% endif %}">{{ bajo_stock|length }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6">Movimientos de los últimos 7 días</h2>
+                <canvas id="chartMov" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6">Stock por categoría</h2>
+                <canvas id="chartCat"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6">Más vendidos (salidas, 30 días)</h2>
+                {% if top_labels %}
+                <canvas id="chartTop" height="140"></canvas>
+                {% else %}
+                <p class="text-muted mb-0">Aún no hay salidas registradas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6">Productos con bajo stock</h2>
+                {% if bajo_stock %}
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th class="text-end">Stock</th>
+                            <th class="text-end">Mínimo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in bajo_stock[:6] %}
+                        <tr>
+                            <td>{{ p.nombre }}</td>
+                            <td class="text-end text-danger fw-semibold">{{ p.stock_actual }}</td>
+                            <td class="text-end">{{ p.stock_minimo }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-success mb-0">Todo el inventario está sobre el mínimo.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6">Últimos movimientos</h2>
+        <table class="table table-sm align-middle mb-0">
+            <tbody>
+                {% for m in ultimos %}
+                <tr>
+                    <td class="text-muted">{{ m.fecha.strftime("%d-%m %H:%M") }}</td>
+                    <td>{{ m.producto.nombre }}</td>
+                    <td>
+                        {% if m.tipo == "entrada" %}<span class="badge bg-success">Entrada</span>
+                        {% else %}<span class="badge bg-warning text-dark">Salida</span>{% endif %}
+                    </td>
+                    <td class="text-end">{{ m.cantidad }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td class="text-muted">Aún no hay movimientos.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+    new Chart(document.getElementById("chartMov"), {
+        type: "bar",
+        data: {
+            labels: {{ mov_labels| tojson }},
+        datasets: [
+        { label: "Entradas", data: {{ mov_entradas| tojson }}, backgroundColor: "#198754" },
+        { label: "Salidas", data: {{ mov_salidas| tojson }}, backgroundColor: "#ffc107" }
+    ]
+    },
+        options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+
+    new Chart(document.getElementById("chartCat"), {
+        type: "doughnut",
+        data: {
+            labels: {{ cat_labels| tojson }},
+        datasets: [{ data: {{ cat_values| tojson }},
+        backgroundColor: ["#0d6efd", "#20c997", "#ffc107", "#dc3545", "#6f42c1", "#fd7e14", "#6c757d"] }]
+    }
+  });
+
+    {% if top_labels %}
+    new Chart(document.getElementById("chartTop"), {
+        type: "bar",
+        data: {
+            labels: {{ top_labels| tojson }},
+        datasets: [{ label: "Unidades", data: {{ top_values| tojson }}, backgroundColor: "#0d6efd" }]
+    },
+        options: {
+            indexAxis: "y", plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
+    {% endif %}
+</script>
 {% endblock %}
