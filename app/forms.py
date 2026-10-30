@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, IntegerField, FloatField, SelectField
+from wtforms.validators import (
+    DataRequired, InputRequired, Email, Length, EqualTo, NumberRange, ValidationError,
+)
 from app.models import Usuario
 
 
@@ -23,3 +25,16 @@ class RegisterForm(FlaskForm):
     def validate_email(self, field):
         if Usuario.query.filter_by(email=field.data.lower()).first():
             raise ValidationError("Ese correo ya está registrado.")
+class ProductoForm(FlaskForm):
+    sku = StringField("SKU / Código", validators=[DataRequired(), Length(max=40)])
+    nombre = StringField("Nombre", validators=[DataRequired(), Length(max=120)])
+    precio = FloatField("Precio (CLP)", validators=[InputRequired(), NumberRange(min=0)])
+    stock_actual = IntegerField(
+        "Stock inicial", default=0, validators=[InputRequired(), NumberRange(min=0)]
+    )
+    stock_minimo = IntegerField(
+        "Stock mínimo (alerta)", default=5, validators=[InputRequired(), NumberRange(min=0)]
+    )
+    categoria_id = SelectField("Categoría", coerce=int)
+    proveedor_id = SelectField("Proveedor", coerce=int)
+    submit = SubmitField("Guardar")

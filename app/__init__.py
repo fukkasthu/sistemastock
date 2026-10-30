@@ -39,8 +39,10 @@ def create_app():
     from app import models  # noqa: F401  (registra los modelos)
     from app.auth import bp as auth_bp
     from app.main import bp as main_bp
+    from app.productos import bp as productos_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(productos_bp)
 
     return app
