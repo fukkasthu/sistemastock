@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Nuevo movimiento - SistemaStock{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3">Registrar movimiento</h1>
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          {% for field in [form.producto_id, form.tipo, form.cantidad, form.nota] %}
+          <div class="mb-3">
+            {{ field.label(class="form-label") }}
+            {% if field.type == "SelectField" %}
+              {{ field(class="form-select") }}
+            {% else %}
+              {{ field(class="form-control") }}
+            {% endif %}
+            {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          {% endfor %}
+          {{ form.submit(class="btn btn-primary") }}
+          <a class="btn btn-outline-secondary" href="{{ url_for('movimientos.lista') }}">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

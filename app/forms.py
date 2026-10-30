@@ -1,8 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, IntegerField, FloatField, SelectField
 from wtforms.validators import (
-    DataRequired, InputRequired, Email, Length, EqualTo, NumberRange, ValidationError,
-)
+    DataRequired, InputRequired, Optional, Email, Length, EqualTo, NumberRange, ValidationError,)
 from app.models import Usuario
 
 
@@ -25,6 +24,7 @@ class RegisterForm(FlaskForm):
     def validate_email(self, field):
         if Usuario.query.filter_by(email=field.data.lower()).first():
             raise ValidationError("Ese correo ya está registrado.")
+        
 class ProductoForm(FlaskForm):
     sku = StringField("SKU / Código", validators=[DataRequired(), Length(max=40)])
     nombre = StringField("Nombre", validators=[DataRequired(), Length(max=120)])
@@ -37,4 +37,21 @@ class ProductoForm(FlaskForm):
     )
     categoria_id = SelectField("Categoría", coerce=int)
     proveedor_id = SelectField("Proveedor", coerce=int)
+    submit = SubmitField("Guardar")
+
+class MovimientoForm(FlaskForm):
+    producto_id = SelectField("Producto", coerce=int)
+    tipo = SelectField("Tipo", choices=[("entrada", "Entrada"), ("salida", "Salida")])
+    cantidad = IntegerField("Cantidad", validators=[InputRequired(), NumberRange(min=1)])
+    nota = StringField("Nota (opcional)", validators=[Optional(), Length(max=200)])
+    submit = SubmitField("Registrar")
+
+class CategoriaForm(FlaskForm):
+    nombre = StringField("Nombre", validators=[DataRequired(), Length(max=80)])
+    submit = SubmitField("Guardar")
+
+class ProveedorForm(FlaskForm):
+    nombre = StringField("Nombre", validators=[DataRequired(), Length(max=120)])
+    contacto = StringField("Contacto", validators=[Optional(), Length(max=120)])
+    telefono = StringField("Teléfono", validators=[Optional(), Length(max=30)])
     submit = SubmitField("Guardar")

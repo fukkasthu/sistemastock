@@ -41,6 +41,7 @@
             {% if p.bajo_stock %}<span class="badge bg-danger ms-1">Bajo</span>{% endif %}
           </td>
           <td class="text-end">
+            <a class="btn btn-sm btn-outline-success" href="{{ url_for('movimientos.nuevo', producto=p.id) }}">Mover</a>
             <a class="btn btn-sm btn-outline-primary" href="{{ url_for('productos.editar', id=p.id) }}">Editar</a>
             <form class="d-inline" method="post" action="{{ url_for('productos.eliminar', id=p.id) }}"
                   onsubmit="return confirm('¿Eliminar este producto?');">

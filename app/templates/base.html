@@ -15,6 +15,7 @@
             {% if current_user.is_authenticated %}
             <ul class="navbar-nav me-auto flex-row gap-3">
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('productos.lista') }}">Productos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('movimientos.lista') }}">Movimientos</a></li>
             </ul>
             <div class="d-flex align-items-center text-white">
                 <span class="me-3">{{ current_user.nombre }} ({{ current_user.rol }})</span>
