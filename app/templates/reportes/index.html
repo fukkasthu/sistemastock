@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Reportes - SistemaStock{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Reportes</h1>
+  <a class="btn btn-outline-success" href="{{ url_for('reportes.exportar_inventario') }}">Descargar inventario (CSV)</a>
+</div>
+
+<form class="card shadow-sm mb-3" method="get">
+  <div class="card-body row g-2 align-items-end">
+    <div class="col-md-2">
+      <label class="form-label small mb-1">Desde</label>
+      <input type="date" name="desde" value="{{ f_desde }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small mb-1">Hasta</label>
+      <input type="date" name="hasta" value="{{ f_hasta }}" class="form-control">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small mb-1">Tipo</label>
+      <select name="tipo" class="form-select">
+        <option value="">Todos</option>
+        <option value="entrada" {% if f_tipo == 'entrada' %}selected{% endif %}>Entradas</option>
+        <option value="salida" {% if f_tipo == 'salida' %}selected{% endif %}>Salidas</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">Categoría</label>
+      <select name="categoria" class="form-select">
+        <option value="">Todas</option>
+        {% for c in categorias %}
+        <option value="{{ c.id }}" {% if f_categoria == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-primary flex-fill">Filtrar</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('reportes.index') }}">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3">
+    <div class="card shadow-sm"><div class="card-body">
+      <div class="text-muted small">Movimientos</div>
+      <div class="fs-3 fw-semibold">{{ total_filas }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card shadow-sm"><div class="card-body">
+      <div class="text-muted small">Unidades que entraron</div>
+      <div class="fs-3 fw-semibold text-success">{{ totales.entrada }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card shadow-sm"><div class="card-body">
+      <div class="text-muted small">Unidades que salieron</div>
+      <div class="fs-3 fw-semibold text-warning">{{ totales.salida }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card shadow-sm"><div class="card-body">
+      <div class="text-muted small">Balance neto</div>
+      <div class="fs-3 fw-semibold">{{ totales.entrada - totales.salida }}</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <span class="text-muted small">
+    {% if total_filas > 200 %}Mostrando los últimos 200 de {{ total_filas }}; el CSV incluye todos.{% else %}{{ total_filas }} resultado(s).{% endif %}
+  </span>
+  <a class="btn btn-success btn-sm" href="{{ exportar_url }}">Exportar movimientos (CSV)</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Fecha</th><th>Producto</th><th>Categoría</th><th>Tipo</th><th class="text-end">Cantidad</th><th>Usuario</th></tr>
+      </thead>
+      <tbody>
+        {% for m in movimientos %}
+        <tr>
+          <td>{{ m.fecha.strftime("%d-%m-%Y %H:%M") }}</td>
+          <td>{{ m.producto.sku }} — {{ m.producto.nombre }}</td>
+          <td>{{ m.producto.categoria.nombre if m.producto.categoria else "—" }}</td>
+          <td>
+            {% if m.tipo == "entrada" %}<span class="badge bg-success">Entrada</span>
+            {% else %}<span class="badge bg-warning text-dark">Salida</span>{% endif %}
+          </td>
+          <td class="text-end">{{ m.cantidad }}</td>
+          <td>{{ m.usuario.nombre if m.usuario else "—" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No hay movimientos con estos filtros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

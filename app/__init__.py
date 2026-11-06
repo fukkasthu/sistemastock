@@ -42,11 +42,13 @@ def create_app():
     from app.productos import bp as productos_bp
     from app.catalogos import bp as catalogos_bp
     from app.movimientos import bp as movimientos_bp
+    from app.reportes import bp as reportes_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(productos_bp)
     app.register_blueprint(catalogos_bp)
     app.register_blueprint(movimientos_bp)
+    app.register_blueprint(reportes_bp)
 
     return app
