@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
+import os
 from app.forms import LoginForm, RegisterForm
 from app.models import Usuario
 
@@ -22,7 +23,7 @@ def login():
                 next_page = url_for("main.index")
             return redirect(next_page)
         flash("Correo o contraseña incorrectos.", "danger")
-    return render_template("auth/login.html", form=form)
+    return render_template("auth/login.html", form=form, demo=os.environ.get("DEMO_MODE") == "1")
 
 
 @bp.route("/registro", methods=["GET", "POST"])
